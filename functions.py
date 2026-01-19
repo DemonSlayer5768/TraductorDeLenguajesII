@@ -4,7 +4,7 @@ import re
 def identificar_tipo(cadena):
     cadena = cadena.strip()
 
-    # String (comillas simples o dobles)
+    # String debe de tener comillas
     if re.fullmatch(r"'[^']*'|\"[^\"]*\"", cadena):
         return "STRING"
 
