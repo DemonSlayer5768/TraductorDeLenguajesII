@@ -1,40 +1,99 @@
-import re
+
+class TipoSimbolo:
+    CHAR = "CHAR"
+    INT = "INT"
+    FLOAT = "FLOAT"
+    PESOS = "PESOS"
+    FIN = "FIN"
+    ERROR = "ERROR"
 
 
-def identificar_tipo(cadena):
-    cadena = cadena.strip()
+class Lexico:
+    def __init__(self, fuente=""):
+        self.fuente = fuente
+        self.ind = 0
+        self.estado = 0
+        self.simbolo = ""
+        self.c = ""
+        self.continua = True
 
-    # String debe de tener comillas
-    if re.fullmatch(r"'[^']*'|\"[^\"]*\"", cadena):
-        return "STRING"
+    def sigCaracter(self):
+        if self.ind >= len(self.fuente):
+            return None   # ← FIN DE ENTRADA REAL
+        c = self.fuente[self.ind]
+        self.ind += 1
+        return c
 
-    # Booleano
-    if cadena.lower() in ("true", "false"):
-        return "BOOLEAN"
+    def retroceso(self):
+        if self.c != None:
+            self.ind -= 1
+        self.continua = False
 
-    # Entero
-    if re.fullmatch(r'-?\d+', cadena):
-        return "INT"
+    def aceptar(self, estado):
+        self.estado = estado
+        self.continua = False
 
-    # Real
-    if re.fullmatch(r'-?\d+\.\d+', cadena):
-        return "REAL"
+    def sigSimbolo(self):
+        self.estado = 0
+        self.simbolo = ""
+        self.continua = True
 
-    # Identificador
-    if re.fullmatch(r'[a-zA-Z_][a-zA-Z0-9_]*', cadena):
-        return "IDENTIFICADOR"
+        while self.continua:
+            self.c = self.sigCaracter()
 
-    return "DESCONOCIDO"
+            # ESTADO 0 - inicio
+            if self.estado == 0:
+                if self.c is None:
+                    self.aceptar(99)
+
+                elif self.c == '$':
+                    self.simbolo += self.c
+                    self.aceptar(4)   # SIMBOLO PESOS
+
+                elif self.c.isalpha() or self.c == '_':
+                    self.simbolo += self.c
+                    self.aceptar(1)
+
+                elif self.c.isdigit():
+                    self.simbolo += self.c
+                    self.estado = 2
 
 
+            # ESTADO 2 - INT
+            elif self.estado == 2:
+                if self.c is not None and self.c.isdigit():
+                    self.simbolo += self.c
+
+                elif self.c == '.':
+                    self.simbolo += self.c
+                    self.estado = 3  # FLOAT
+
+                else:
+                    self.retroceso()
+                    self.aceptar(2)
 
 
-def analizador_lexico(cadena):
-    tokens = cadena.split()
-    resultado = []
+            # ESTADO 3 - FLOAT
+            elif self.estado == 3:
+                if self.c is not None and self.c.isdigit():
+                    self.simbolo += self.c
+                else:
+                    self.retroceso()
+                    self.aceptar(3) 
 
-    for token in tokens:
-        tipo = identificar_tipo(token)
-        resultado.append((token, tipo))
 
-    return resultado
+        return self.clasificar()
+
+    def clasificar(self):
+        if self.estado == 1:
+            return TipoSimbolo.CHAR
+        if self.estado == 2:
+            return TipoSimbolo.INT
+        if self.estado == 3:
+            return TipoSimbolo.FLOAT
+        if self.estado == 4:
+            return TipoSimbolo.PESOS
+        if self.estado == 99:
+            return TipoSimbolo.FIN
+        return TipoSimbolo.ERROR
+
