@@ -1,0 +1,19 @@
+{
+  "name": "validacion-datos",
+  "version": "1.0.0",
+  "description": "Traductor de esquemas JSON Schema a código JavaScript de validación usando Ajv",
+  "main": "validator.js",
+  "scripts": {
+    "build": "node main.js",
+    "test": "node test.js",
+    "validate": "node validator.js"
+  },
+  "keywords": ["validation", "json-schema", "ajv", "translator", "javascript"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1"
+  }
+}
