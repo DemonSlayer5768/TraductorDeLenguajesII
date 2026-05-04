@@ -35,21 +35,107 @@ Tu tarea será evaluada en base a los siguientes criterios:
 
 from lexico.lexico import tokenize
 from sintactico.parserLR import parse
+import os
+
+def analizar_archivo(ruta_archivo, mostrar_tokens=True):
+    """
+    Analiza un archivo de código fuente.
+    
+    Args:
+        ruta_archivo: Ruta al archivo de código fuente
+        mostrar_tokens: Si se deben mostrar los tokens (default: True)
+    """
+    if not os.path.exists(ruta_archivo):
+        print(f"Error: El archivo '{ruta_archivo}' no existe.")
+        return
+    
+    try:
+        with open(ruta_archivo, "r", encoding="utf-8") as f:
+            codigo = f.read()
+        
+        print(f"\n{'='*60}")
+        print(f"Analizando: {ruta_archivo}")
+        print(f"{'='*60}\n")
+        
+        print("ANÁLISIS LÉXICO:")
+        print("-" * 60)
+        
+        try:
+            tokens = tokenize(codigo)
+            
+            if mostrar_tokens:
+                for token in tokens:
+                    print(token)
+            else:
+                print(f"Total de tokens encontrados: {len(tokens)}")
+            
+            print(f"\n✓ Análisis léxico completado correctamente")
+            
+        except Exception as e:
+            print(f"✗ Error léxico detectado:")
+            print(f"  {e}")
+            return
+        
+        print("\n" + "="*60)
+        print("ANÁLISIS SINTÁCTICO:")
+        print("-" * 60)
+        
+        try:
+            if parse("gramatica/compilador.lr", codigo):
+                print("\n✓ Análisis sintáctico completado correctamente")
+        except Exception as e:
+            print(f"✗ Error sintáctico detectado:")
+            print(f"  {e}")
+        
+        
+    except Exception as e:
+        print(f"Error al procesar el archivo: {e}")
+
+def menu_principal():
+    """Muestra un menú para seleccionar qué archivo analizar."""
+    while True:
+        print("\n" + "="*60)
+        print("ANALIZADOR LÉXICO Y SINTÁCTICO")
+        print("="*60)
+        print("\nSelecciona un archivo para analizar:")
+        print("1. correcto.txt - Código sintácticamente correcto")
+        print("2. error_lexico.txt - Código con error léxico")
+        print("3. error_sintactico.txt - Código con error sintáctico")
+        print("4. complejo.txt - Código más complejo")
+        print("5. Analizar todos los archivos")
+        print("6. Salir")
+        
+        opcion = input("\nOpción (1-6): ").strip()
+        
+        archivos = {
+            "1": ("ejemplos/correcto.txt", True),
+            "2": ("ejemplos/error_lexico.txt", True),
+            "3": ("ejemplos/error_sintactico.txt", True),
+            "4": ("ejemplos/complejo.txt", True),
+        }
+        
+        if opcion in archivos:
+            analizar_archivo(archivos[opcion][0], archivos[opcion][1])
+        elif opcion == "5":
+            for ruta, _ in archivos.values():
+                analizar_archivo(ruta, True)
+        elif opcion == "6":
+            print("\n¡Hasta luego!")
+            break
+        else:
+            print("Opción inválida. Intenta de nuevo.")
 
 def main():
-    with open("ejemplos/correcto.txt", "r") as f:
-        codigo = f.read()
-
-    print("Tokens encontrados:")
-    tokens = tokenize(codigo)
-    for token in tokens:
-        print(token)
-
-    print("\nAnálisis sintáctico:")
-    try:
-        parse("gramatica/compilador.lr", codigo)
-    except Exception as e:
-        print(f"Error: {e}")
+    """Función principal."""
+    import sys
+    
+    # Si se pasan argumentos, analizar ese archivo directamente
+    if len(sys.argv) > 1:
+        archivo = sys.argv[1]
+        analizar_archivo(archivo, True)
+    else:
+        # Mostrar menú interactivo
+        menu_principal()
 
 if __name__ == "__main__":
     main()

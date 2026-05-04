@@ -3,6 +3,16 @@ from .cargarLR import cargarLR
 from lexico.lexico import Lexico
 
 def parse(rutaLR, codigo):
+    """
+    Realiza análisis sintáctico LR.
+    
+    Args:
+        rutaLR: Ruta al archivo de tabla LR
+        codigo: Código fuente a analizar
+        
+    Raises:
+        Exception: Si hay un error sintáctico
+    """
     tablaLR, idReglas, lonReglas = cargarLR(rutaLR)
 
     pila = Pila()
@@ -25,8 +35,7 @@ def parse(rutaLR, codigo):
         elif accion < 0:
 
             if accion == -1:
-                print("CADENA ACEPTADA")
-                break
+                return True  # Cadena aceptada
 
             numRegla = -accion - 2
 
@@ -38,5 +47,6 @@ def parse(rutaLR, codigo):
             pila.push(tablaLR[estado][idReglas[numRegla]])
 
         else:
-            print("ERROR SINTÁCTICO")
-            break
+            # Error sintáctico
+            raise Exception(f"Error sintáctico: token inesperado '{lexico.simbolo}' en línea {lexico.linea}, columna {lexico.columna}")
+
