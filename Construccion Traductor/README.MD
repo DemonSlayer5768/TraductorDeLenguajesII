@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Implementar un analizador léxico y sintáctico para un lenguaje de programación simplificado que identifique tokens correctamente, detecte errores léxicos y sintácticos, y acepte códigos válidos.
+Implementar un analizador léxico y sintáctico para un lenguaje de programación simplificado que identifique tokens correctamente, detecte errores léxicos y sintácticos, y acepte códigos válidos
 
 ## Descripción del Proyecto
 
