@@ -6,7 +6,7 @@
 
 ```bash
 python main.py
-```
+```git s
 
 Permite seleccionar qué archivo analizar y ver los resultados detallados.
 
