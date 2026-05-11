@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Simulador LR</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #1e1e2f;
+        color: white;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: auto;
+        background: #2a2a40;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      input {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        flex: 1;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #4cafef;
+        color: white;
+        font-weight: bold;
+        transition: 0.3s;
+      }
+
+      button:hover {
+        transform: scale(1.05);
+        background: #2196f3;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        overflow: hidden;
+        border-radius: 10px;
+      }
+
+      th {
+        background: #444;
+      }
+
+      th,
+      td {
+        border: 1px solid #555;
+        padding: 12px;
+        text-align: center;
+      }
+
+      tr {
+        transition: all 0.5s ease;
+      }
+
+      .active {
+        background: #4caf50 !important;
+        transform: scale(1.02);
+      }
+
+      .accepted {
+        background: #2196f3 !important;
+      }
+
+      .error {
+        background: #e53935 !important;
+      }
+
+      .status {
+        margin-top: 20px;
+        font-size: 18px;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Simulador de Parsing LR</h1>
+
+      <div class="controls">
+        <input
+          type="text"
+          id="inputString"
+          placeholder="Ingresa cadena ej: id+id"
+        />
+
+        <button onclick="generateSteps()">Generar</button>
+
+        <button onclick="startAnimation()">▶ Play</button>
+
+        <button onclick="nextStep()">⏭ Paso</button>
+
+        <button onclick="resetTable()">🔄 Reset</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pila</th>
+            <th>Entrada</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+      </table>
+
+      <div class="status" id="status">Esperando entrada...</div>
+    </div>
+
+    <script>
+      let steps = [];
+      let currentStep = 0;
+      let interval = null;
+
+      function generateSteps() {
+        const input = document.getElementById("inputString").value;
+
+        if (!input) {
+          alert("Ingresa una cadena");
+          return;
+        }
+
+        steps = [];
+
+        let remaining = input + "$";
+
+        // Estado inicial
+        steps.push({
+          pila: "$0",
+          entrada: remaining,
+          accion: "Inicio",
+        });
+
+        // Simulación sencilla
+        for (let i = 0; i < input.length; i++) {
+          const symbol = input[i];
+
+          steps.push({
+            pila: `$0${symbol}${i + 1}`,
+            entrada: remaining.substring(i + 1),
+            accion: `Shift ${symbol}`,
+          });
+        }
+
+        steps.push({
+          pila: "$0E1",
+          entrada: "$",
+          accion: "ACCEPT",
+        });
+
+        renderTable();
+      }
+
+      function renderTable() {
+        const body = document.getElementById("tableBody");
+
+        body.innerHTML = "";
+
+        steps.forEach((step, index) => {
+          const row = document.createElement("tr");
+
+          row.id = "row-" + index;
+
+          row.innerHTML = `
+            <td>${index}</td>
+            <td>${step.pila}</td>
+            <td>${step.entrada}</td>
+            <td>${step.accion}</td>
+        `;
+
+          body.appendChild(row);
+        });
+
+        currentStep = 0;
+      }
+
+      function highlightRow(index) {
+        document.querySelectorAll("tr").forEach((r) => {
+          r.classList.remove("active");
+        });
+
+        const row = document.getElementById("row-" + index);
+
+        if (row) {
+          row.classList.add("active");
+
+          if (steps[index].accion === "ACCEPT") {
+            row.classList.add("accepted");
+
+            document.getElementById("status").innerText = "Cadena aceptada ✅";
+          }
+
+          row.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }
+
+      function nextStep() {
+        if (currentStep < steps.length) {
+          highlightRow(currentStep);
+
+          currentStep++;
+        }
+      }
+
+      function startAnimation() {
+        clearInterval(interval);
+
+        interval = setInterval(() => {
+          if (currentStep < steps.length) {
+            nextStep();
+          } else {
+            clearInterval(interval);
+          }
+        }, 1200);
+      }
+
+      function resetTable() {
+        clearInterval(interval);
+
+        currentStep = 0;
+
+        document.getElementById("tableBody").innerHTML = "";
+
+        document.getElementById("status").innerText = "Esperando entrada...";
+      }
+    </script>
+  </body>
+</html>
